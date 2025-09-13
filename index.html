@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Code Learning Platform Prototype</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 0;
+    background: #f4f7f9;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  /* Sidebar for tutorials and exercises */
+  #sidebar {
+    width: 300px;
+    background: #2e3a59;
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar h2 {
+    margin-top: 0;
+    font-weight: 700;
+  }
+  #tutorials, #exercises {
+    margin-bottom: 20px;
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+  #tutorials ul, #exercises ul {
+    padding-left: 20px;
+  }
+  #tutorials li, #exercises li {
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  #tutorials li:hover, #exercises li:hover {
+    text-decoration: underline;
+  }
+
+  /* Main content area: editor and output */
+  #main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  /* Code editor */
+  #editor {
+    flex-grow: 1;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 16px;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 6px;
+    padding: 12px;
+    outline: none;
+    resize: none;
+    border: none;
+  }
+
+  /* Error and debugging suggestions */
+  #error {
+    margin-top: 10px;
+    color: #f44336;
+    font-weight: 600;
+  }
+  #debugging {
+    margin-top: 8px;
+    color: #2196f3;
+    font-style: italic;
+  }
+
+  /* Run button */
+  #run-btn {
+    margin-top: 12px;
+    background: #4caf50;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+  #run-btn:hover {
+    background: #45a049;
+  }
+
+  /* Output console */
+  #output {
+    margin-top: 15px;
+    background: #222;
+    color: #fff;
+    font-family: monospace;
+    padding: 12px;
+    border-radius: 6px;
+    height: 120px;
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h2>Tutorials</h2>
+  <div id="tutorials">
+    <ul>
+      <li data-code="console.log('Hello World');" data-error="" data-debug="This prints a message to the console.">Print to Console</li>
+      <li data-code="let x = 10;\nconsole.log(x);" data-error="" data-debug="Declare a variable and print it.">Variables</li>
+      <li data-code="for(let i=0; i<5; i++) {\n console.log(i);\n}" data-error="" data-debug="Basic for loop iterating 5 times.">Loops</li>
+      <li data-code="console.log(1 / 0);" data-error="Warning: Division by zero!" data-debug="Dividing by zero results in Infinity.">Division by Zero</li>
+    </ul>
+  </div>
+
+  <h2>Exercises</h2>
+  <div id="exercises">
+    <ul>
+      <li data-code="/* Write a function to add two numbers */\nfunction add(a, b) {\n  // your code here\n}">Add Function</li>
+      <li data-code="/* Print numbers from 1 to 10 */\nfor(let i=1; i<=10; i++) {\n  // your code here\n}">Print 1 to 10</li>
+    </ul>
+  </div>
+</div>
+
+<div id="main">
+  <textarea id="editor" spellcheck="false">// Select a tutorial or exercise on the left to start coding.</textarea>
+  <button id="run-btn">Run Code</button>
+  <div id="error"></div>
+  <div id="debugging"></div>
+  <div id="output"></div>
+</div>
+
+<script>
+  const tutorials = document.querySelectorAll('#tutorials li');
+  const exercises = document.querySelectorAll('#exercises li');
+  const editor = document.getElementById('editor');
+  const errorDiv = document.getElementById('error');
+  const debuggingDiv = document.getElementById('debugging');
+  const outputDiv = document.getElementById('output');
+  const runBtn = document.getElementById('run-btn');
+
+  // Load code, error message, debugging tip from selected item
+  function loadCode(element) {
+    editor.value = element.getAttribute('data-code');
+    errorDiv.textContent = element.getAttribute('data-error');
+    debuggingDiv.textContent = element.getAttribute('data-debug') || '';
+    outputDiv.textContent = '';
+  }
+
+  tutorials.forEach(item => {
+    item.addEventListener('click', () => loadCode(item));
+  });
+  exercises.forEach(item => {
+    item.addEventListener('click', () => loadCode(item));
+  });
+
+  runBtn.addEventListener('click', () => {
+    errorDiv.textContent = '';
+    debuggingDiv.textContent = '';
+    outputDiv.textContent = '';
+    try {
+      // Capture console.log output
+      const logs = [];
+      const originalConsoleLog = console.log;
+      console.log = (...args) => {
+        logs.push(args.join(' '));
+      };
+
+      // Evaluate user code
+      new Function(editor.value)();
+
+      // Restore console.log
+      console.log = originalConsoleLog;
+
+      outputDiv.textContent = logs.join('\n') || 'Code executed successfully.';
+
+    } catch (e) {
+      errorDiv.textContent = 'Error: ' + e.message;
+      debuggingDiv.textContent = 'Check your syntax and variable names.';
+    }
+  });
+</script>
+
+</body>
+</html>
